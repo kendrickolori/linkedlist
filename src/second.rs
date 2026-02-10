@@ -53,6 +53,22 @@ impl<T> List<T> {
     }
 }
 
+pub struct ListIntoIter<T>(List<T>);
+impl<T> Iterator for ListIntoIter<T> {
+    type Item = T;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.pop()
+    }
+}
+impl<T> IntoIterator for List<T> {
+    type Item = T;
+    type IntoIter = ListIntoIter<T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        ListIntoIter(self)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::second::List;
@@ -100,7 +116,21 @@ mod test {
         list.push(2i32);
         assert_eq!(Some(&2i32), list.peek());
         list.push(45i32);
-        list.peek_mut().map(| val| *val = 45);
+        list.peek_mut().map(|val| *val = 45);
         assert_eq!(Some(&45), list.peek());
+    }
+
+    #[test]
+    fn into_iter() {
+        let mut list = List::new();
+        list.push(1);
+        list.push(2);
+        list.push(3);
+
+        let mut iter = list.into_iter();
+        assert_eq!(iter.next(), Some(3));
+        assert_eq!(iter.next(), Some(2));
+        assert_eq!(iter.next(), Some(1));
+        assert_eq!(iter.next(), None);
     }
 }
