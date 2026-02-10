@@ -2,7 +2,7 @@ use std::mem;
 pub struct List {
     head: Link,
 }
-#[derive(Clone,Default)]
+#[derive(Clone, Default)]
 enum Link {
     #[default]
     Empty,
@@ -14,16 +14,14 @@ struct Node {
     next: Link,
 }
 
-
-impl Drop for List{
-  fn drop(&mut self){
-    while matches!(self.head,Link::More(_)){
-      self.pop_node();
+impl Drop for List {
+    fn drop(&mut self) {
+        while matches!(self.head, Link::More(_)) {
+            self.pop_node();
+        }
     }
-  }
 }
 impl List {
-
     pub fn new() -> Self {
         List { head: Link::Empty }
     }
@@ -37,23 +35,23 @@ impl List {
     }
 
     pub fn pop(&mut self) -> Option<i32> {
-         self.pop_node().map(|n|n.elem)
+        self.pop_node().map(|n| n.elem)
     }
 
-    fn pop_node(&mut self)->Option<Node>{
-    match mem::replace(&mut self.head,Link::Empty){
-      Link::Empty=>None,
-      Link::More(mut node)=>{
-        self.head = node.next;
-        node.next=Link::Empty;
-        Some(*node)
-      }
-    }
+    fn pop_node(&mut self) -> Option<Node> {
+        match mem::replace(&mut self.head, Link::Empty) {
+            Link::Empty => None,
+            Link::More(mut node) => {
+                self.head = node.next;
+                node.next = Link::Empty;
+                Some(*node)
+            }
+        }
     }
 }
 
 #[cfg(test)]
-mod test{
+mod test {
     use crate::first::List;
     #[test]
     fn basics() {
@@ -83,13 +81,13 @@ mod test{
         assert_eq!(list.pop(), None);
     }
     #[test]
-    fn test_drop(){
-     { let mut list = List::new();
+    fn test_drop() {
+        {
+            let mut list = List::new();
 
-      for i in 1..=100000{
-        list.push(i)
-      }
-      }
-      
+            for i in 1..=100000 {
+                list.push(i)
+            }
+        }
     }
 }

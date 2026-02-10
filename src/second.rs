@@ -1,29 +1,27 @@
-
-
-type Link = Option<Box<Node>>;
-pub struct List {
-    head: Link,
+type Link<T> = Option<Box<Node<T>>>;
+pub struct List<T> {
+    head: Link<T>,
 }
 
 #[derive(Clone)]
-struct Node {
-    elem: i32,
-    next: Link,
+struct Node<T> {
+    elem: T,
+    next: Link<T>,
 }
 
-impl Drop for List {
+impl<T> Drop for List<T> {
     fn drop(&mut self) {
         while self.head.is_some() {
             self.pop_node();
         }
     }
 }
-impl List {
+impl<T> List<T> {
     pub fn new() -> Self {
         List { head: None }
     }
 
-    pub fn push(&mut self, elem: i32) {
+    pub fn push(&mut self, elem: T) {
         let new_node = Node {
             elem,
             next: self.head.take(),
@@ -31,11 +29,11 @@ impl List {
         self.head = Some(Box::new(new_node));
     }
 
-    pub fn pop(&mut self) -> Option<i32> {
+    pub fn pop(&mut self) -> Option<T> {
         self.pop_node().map(|n| n.elem)
     }
 
-    fn pop_node(&mut self) -> Option<Node> {
+    fn pop_node(&mut self) -> Option<Node<T>> {
         match self.head.take() {
             None => None,
             Some(mut node) => {
@@ -45,11 +43,19 @@ impl List {
             }
         }
     }
+
+    pub fn peek(&self) -> Option<&T> {
+        self.head.as_ref().map(|node| &node.elem)
+    }
+
+    pub fn peek_mut(&mut self) -> Option<&mut T> {
+        self.head.as_mut().map(|node| &mut node.elem)
+    }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::first::List;
+    use crate::second::List;
     #[test]
     fn basics() {
         let mut list = List::new();
@@ -86,5 +92,15 @@ mod test {
                 list.push(i)
             }
         }
+    }
+
+    #[test]
+    fn test_peek() {
+        let mut list: List<i32> = List::new();
+        list.push(2i32);
+        assert_eq!(Some(&2i32), list.peek());
+        list.push(45i32);
+        list.peek_mut().map(| val| *val = 45);
+        assert_eq!(Some(&45), list.peek());
     }
 }
