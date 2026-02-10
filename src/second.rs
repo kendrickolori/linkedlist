@@ -69,6 +69,31 @@ impl<T> IntoIterator for List<T> {
     }
 }
 
+//
+
+pub struct Iter<'a,T> {
+    next: Option<&'a Node<T>>,
+}
+
+impl<'a,T> List<T> {
+    pub fn iter(&'a self) ->Iter<'a,T>{
+        Iter {
+            next: self.head.as_deref()
+        }
+    }
+}
+
+impl<'a,T> Iterator for Iter<'a,T> {
+    type Item = &'a T;
+
+    fn next(&mut self) -> Option<&'a T> {
+        self.next.map(|node| {
+            self.next = node.next.as_deref();
+            &node.elem
+        })
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::second::List;
@@ -133,4 +158,23 @@ mod test {
         assert_eq!(iter.next(), Some(1));
         assert_eq!(iter.next(), None);
     }
+
+    #[test]
+    fn test_iter_is_not_consuming() {
+        let mut list = List::new();
+        list.push(1);
+        list.push(2);
+    
+        // Create an iterator and use it
+        {
+            let mut iter = list.iter();
+            assert_eq!(iter.next(), Some(&2));
+            assert_eq!(iter.next(), Some(&1));
+        } 
+    
+        // THE MOMENT OF TRUTH:
+        // If it didn't consume, we can still pop from the original list!
+        assert_eq!(list.pop(), Some(2));
+    }
+    
 }
